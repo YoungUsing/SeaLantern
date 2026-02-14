@@ -19,16 +19,12 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
-            build-name: 'macOS ARM64 (M1/M2/M3)'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
-            build-name: 'macOS Intel x64'
           - platform: 'ubuntu-24.04'
             args: ''
-            build-name: 'Linux x64'
           - platform: 'windows-latest'
             args: ''
-            build-name: 'Windows x64'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -49,48 +45,24 @@ jobs:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust 缓存
-        uses: swatinem/rust-cache@v2.7.3
+        uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
       - name: 安装前端依赖
         run: bun install
 
-      - name: 构建与发布 (${{ matrix.build-name }})
+      - name: 构建与发布
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: sea-lantern-v__VERSION__
           releaseName: 'Sea Lantern v__VERSION__'
           releaseBody: |
             ## 🎉 发布 Sea Lantern v__VERSION__
             
-            请在此处添加发布说明和亮点描述。
-            
-            ## 📥 下载
-            
-            选择适合你系统的版本下载：
-            
-            ### 🪟 Windows
-            - Sea-Lantern_*_x64-setup.msi
-            
-            ### 🍎 macOS
-            - Sea-Lantern_*_aarch64.dmg (Apple Silicon)
-            - Sea-Lantern_*_x64.dmg (Intel)
-            
-            ### 🐧 Linux
-            - sea-lantern_*.AppImage
-            - sea-lantern_*.deb
-            - sea-lantern-*.rpm
+            请在此处添加发布说明。
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
